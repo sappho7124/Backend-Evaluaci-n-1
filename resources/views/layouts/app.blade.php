@@ -3,44 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludoteca</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Sistema de Gestión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('juegos.index') }}">🎲 Ludoteca</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('juegos.index') }}">Juegos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('idiomas.index') }}">Idiomas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('expansiones.index') }}">Expansiones</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('busqueda.avanzada') }}">Búsqueda Avanzada</a>
-                    </li>
-                </ul>
+<body class="bg-gray-100 text-gray-800 font-sans">
+    <nav class="bg-indigo-600 text-white p-4 shadow-md">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Gestión de Tienda</h1>
+            <div class="space-x-4">
+                <a href="{{ route('user.index') }}" class="hover:underline {{ request()->routeIs('user.*') ? 'font-bold underline' : '' }}">Tienda / Vender</a>
+                <a href="{{ route('categorias.index') }}" class="hover:underline {{ request()->routeIs('categorias.*') ? 'font-bold underline' : '' }}">Categorías</a>
+                <a href="{{ route('productos.index') }}" class="hover:underline {{ request()->routeIs('productos.*') ? 'font-bold underline' : '' }}">Productos</a>
+                <a href="{{ route('ventas.index') }}" class="hover:underline {{ request()->routeIs('ventas.*') ? 'font-bold underline' : '' }}">Historial Ventas</a>
             </div>
         </div>
     </nav>
 
-    <div class="container">
-        <!-- Mostrar alerta tras la creación, actualización o eliminación -->
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <main class="max-w-7xl mx-auto mt-6 p-4">
+        @if(session('success'))
+            <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded shadow-sm">
                 {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
         @yield('content')
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </main>
 </body>
 </html>
