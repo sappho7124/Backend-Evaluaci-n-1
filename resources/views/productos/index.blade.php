@@ -19,7 +19,7 @@
                 <label for="categoria_id" class="block text-sm font-medium text-gray-700">Categoría</label>
                 <select name="categoria_id" id="categoria_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">Seleccione una categoría</option>
-                    @foreach($categorias as$categoria)
+                    @foreach($categorias as $categoria)
                         <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
                     @endforeach
                 </select>
@@ -74,7 +74,7 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-                @forelse($productos as$producto)
+                @forelse($productos as $producto)
                     <tr>
                         <td class="px-3 py-3 font-medium text-gray-900">{{ $producto->nombre }}</td>
                         <td class="px-3 py-3 text-gray-500">{{ $producto->categoria->nombre ?? 'Sin Categoría' }}</td>

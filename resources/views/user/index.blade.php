@@ -2,14 +2,14 @@
 
 @section('content')
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Products Selection Grid -->
+    <!-- Catálogo de Productos -->
     <div class="lg:col-span-2">
-        <h2 class="text-xl font-bold mb-4">Catálogo de Productos Disponibles</h2>
+        <h2 class="text-xl font-bold mb-4 text-gray-800">Catálogo de Productos</h2>
         
         @if($errors->any())
             <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded shadow-sm">
-                <ul>
-                    @foreach($errors->all() as$error)
+                <ul class="list-disc pl-5">
+                    @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
@@ -17,8 +17,15 @@
         @endif
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @forelse($productos as$producto)
-                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100 flex flex-col justify-between">
+            @forelse($productos as $producto)
+                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100 flex flex-col justify-between relative">
+                    
+                    @if($producto->es_promocion)
+                        <span class="absolute -top-3 -right-2 bg-red-500 text-white text-xs font-extrabold px-2 py-1 rounded-full shadow">
+                            🔥 Promoción -10%
+                        </span>
+                    @endif
+
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="font-bold text-lg text-gray-800">{{ $producto->nombre }}</h3>
@@ -32,7 +39,15 @@
 
                     <div>
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-lg font-bold text-gray-900">${{ number_format($producto->precio, 2) }}</span>
+                            <div>
+                                @if($producto->es_promocion)
+                                    <span class="text-xs line-through text-gray-400 mr-1">${{ number_format($producto->precio, 2) }}</span>
+                                    <span class="text-lg font-extrabold text-green-600">${{ number_format($producto->precio_final, 2) }}</span>
+                                @else
+                                    <span class="text-lg font-bold text-gray-900">${{ number_format($producto->precio, 2) }}</span>
+                                @endif
+                            </div>
+
                             <span class="text-xs font-semibold px-2.5 py-0.5 rounded {{ $producto->stock > 5 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                 Stock: {{ $producto->stock }}
                             </span>
@@ -53,34 +68,57 @@
                 </div>
             @empty
                 <div class="col-span-2 bg-white p-8 text-center rounded-lg shadow-md text-gray-500">
-                    No hay productos con stock disponible para la venta.
+                    No hay productos disponibles para la venta.
                 </div>
             @endforelse
         </div>
     </div>
 
-    <!-- Interactive Shopping Cart -->
+    <!-- Carrito y Formulario de Pago -->
     <div class="bg-white p-6 rounded-lg shadow-md h-fit">
-        <h2 class="text-xl font-bold mb-4 flex justify-between items-center">
+        <h2 class="text-xl font-bold mb-4 flex justify-between items-center text-gray-800">
             <span>Carrito de Compra</span>
-            <button onclick="clearCart()" class="text-xs text-red-600 hover:underline">Vaciar</button>
+            <button type="button" onclick="clearCart()" class="text-xs text-red-600 hover:underline">Vaciar</button>
         </h2>
 
         <form action="{{ route('ventas.store') }}" method="POST" id="checkout-form">
             @csrf
-            <div id="cart-items-container" class="divide-y divide-gray-200 min-h-[150px] mb-4">
-                <p id="empty-cart-msg" class="text-gray-400 text-center py-8 text-sm">El carrito está vacío.</p>
+            
+            <div id="cart-items-container" class="divide-y divide-gray-200 min-h-[100px] mb-4">
+                <p id="empty-cart-msg" class="text-gray-400 text-center py-6 text-sm">El carrito está vacío.</p>
             </div>
 
-            <div class="border-t pt-4">
+            <div class="border-t pt-4 space-y-3">
+                <h3 class="font-bold text-sm text-gray-700">Datos de Pago</h3>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600">Nombre Completo</label>
+                    <input type="text" name="nombre_cliente" required placeholder="Juan Pérez"
+                           class="w-full mt-1 p-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600">Correo Electrónico</label>
+                    <input type="email" name="correo_cliente" required placeholder="juan@ejemplo.com"
+                           class="w-full mt-1 p-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600">Número de Tarjeta</label>
+                    <input type="text" name="numero_tarjeta" maxlength="20" required placeholder="4532 1234 5678 9012"
+                           class="w-full mt-1 p-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div class="border-t mt-4 pt-4">
                 <div class="flex justify-between font-bold text-lg text-gray-900 mb-4">
-                    <span>Total:</span>
+                    <span>Total a Pagar:</span>
                     <span id="cart-total">$0.00</span>
                 </div>
 
                 <button type="submit" id="btn-submit-sale" disabled 
-                        class="w-full bg-green-600 text-white py-3 px-4 rounded-md font-bold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Finalizar Compra
+                        class="w-full bg-green-600 text-white py-3 px-4 rounded-md font-bold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                    Pagar y Finalizar
                 </button>
             </div>
         </form>
@@ -97,6 +135,7 @@
         if (quantity <= 0) return;
 
         const existingItem = cart.find(item => item.id === product.id);
+        const precioAplicado = product.precio_final;
 
         if (existingItem) {
             const newQty = existingItem.cantidad + quantity;
@@ -111,9 +150,10 @@
             cart.push({
                 id: product.id,
                 nombre: product.nombre,
-                precio: parseFloat(product.precio),
+                precio: precioAplicado,
                 cantidad: quantity,
-                stockMax: product.stock
+                stockMax: product.stock,
+                esPromocion: product.es_promocion
             });
         }
 
@@ -149,7 +189,7 @@
         container.innerHTML = '';
 
         if (cart.length === 0) {
-            container.innerHTML = '<p class="text-gray-400 text-center py-8 text-sm">El carrito está vacío.</p>';
+            container.innerHTML = '<p class="text-gray-400 text-center py-6 text-sm">El carrito está vacío.</p>';
             totalElement.innerText = '$0.00';
             submitBtn.disabled = true;
             return;
@@ -165,7 +205,7 @@
             div.className = 'py-3 flex justify-between items-center';
             div.innerHTML = `
                 <div class="flex-1 pr-2">
-                    <h4 class="font-semibold text-sm text-gray-800">${item.nombre}</h4>
+                    <h4 class="font-semibold text-sm text-gray-800">${item.nombre} ${item.esPromocion ? '<span class="text-xs text-red-500 font-bold">(-10%)</span>' : ''}</h4>
                     <span class="text-xs text-gray-500">$${item.precio.toFixed(2)} c/u</span>
                     <input type="hidden" name="items[${index}][producto_id]" value="${item.id}">
                     <input type="hidden" name="items[${index}][cantidad]" value="${item.cantidad}">

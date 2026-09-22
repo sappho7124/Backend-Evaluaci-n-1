@@ -3,21 +3,32 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Producto extends Model
 {
+    public $timestamps = false;
     protected $table = 'productos';
-    protected $fillable = ['nombre', 'descripcion', 'precio', 'stock', 'franquicia'];
+    protected $fillable = ['nombre', 'descripcion', 'precio', 'stock', 'franquicia', 'categoria_id'];
 
-    public function categoria(): BelongsTo
+    protected $appends = ['precio_final', 'es_promocion'];
+
+    public function getEsPromocionAttribute()
+    {
+        return $this->stock > 20;
+    }
+
+    public function getPrecioFinalAttribute()
+    {
+        return $this->stock > 20 ? round($this->precio * 0.90, 2) : (float) $this->precio;
+    }
+
+    public function categoria()
     {
         return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 
-    public function ventas(): HasMany
+    public function detalles()
     {
-        return $this->hasMany(Venta::class, 'venta_id');
+        return $this->hasMany(DetalleVenta::class, 'producto_id');
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
@@ -9,72 +10,77 @@ use Illuminate\Support\Facades\DB;
 
 class VentaController extends Controller
 {
-    // Mostrar listado de ventas realizadas
     public function index()
     {
-        $ventas = Venta::with('detalles.producto')->latest()->get();
+        $ventas = Venta::with('detalles.producto')->get();
         return view('ventas.index', compact('ventas'));
     }
 
-    // Vista para realizar compras/ventas
     public function create()
     {
+        // Solo productos con stock mayor a cero (0)
         $productos = Producto::with('categoria')->where('stock', '>', 0)->get();
         return view('user.index', compact('productos'));
     }
 
-    // Procesar la venta
     public function store(Request $request)
     {
         $request->validate([
-            'items' => 'required|array|min:1',
+            'nombre_cliente' => 'required|string|max:150',
+            'correo_cliente' => 'required|email|max:150',
+            'numero_tarjeta' => 'required|string|max:20',
+            'items'          => 'required|array|min:1',
             'items.*.producto_id' => 'required|exists:productos,id',
-            'items.*.cantidad' => 'required|integer|min:1',
+            'items.*.cantidad'    => 'required|integer|min:1',
         ]);
 
         DB::beginTransaction();
         try {
-            $totalVenta = 0;
+            $valorTotal = 0;
             $detallesParaInsertar = [];
 
             foreach ($request->items as $item) {
                 $producto = Producto::lockForUpdate()->find($item['producto_id']);
 
-                if ($producto->stock < $item['cantidad']) {
-                    return back()->withErrors(["stock" => "El producto '{$producto->nombre}' no tiene suficiente stock disponible."]);
+                if (!$producto || $producto->stock <= 0) {
+                    DB::rollBack();
+                    return back()->withErrors(["stock" => "El producto '{$producto->nombre}' no tiene stock disponible."]);
                 }
 
-                $subtotal = $producto->precio * $item['cantidad'];
-                $totalVenta += $subtotal;
+                if ($producto->stock < $item['cantidad']) {
+                    DB::rollBack();
+                    return back()->withErrors(["stock" => "El producto '{$producto->nombre}' no tiene suficiente stock disponible (Quedan {$producto->stock})."]);
+                }
 
-                // Descontar el stock
+                $precioEfectivo = $producto->stock > 20 ? round($producto->precio * 0.90, 2) : $producto->precio;
+                $subtotal = $precioEfectivo * $item['cantidad'];
+                $valorTotal += $subtotal;
+
                 $producto->decrement('stock', $item['cantidad']);
 
                 $detallesParaInsertar[] = [
                     'producto_id' => $producto->id,
-                    'cantidad' => $item['cantidad'],
-                    'precio_unitario' => $producto->precio,
-                    'subtotal' => $subtotal,
+                    'cantidad'    => $item['cantidad'],
                 ];
             }
 
-            // Registrar Venta
             $venta = Venta::create([
-                'total' => $totalVenta,
-                'fecha' => now(),
+                'nombre_cliente' => $request->nombre_cliente,
+                'correo_cliente' => $request->correo_cliente,
+                'numero_tarjeta' => $request->numero_tarjeta,
+                'valor_total'    => $valorTotal,
             ]);
 
-            // Registrar detalles
             foreach ($detallesParaInsertar as $detalle) {
                 $venta->detalles()->create($detalle);
             }
 
             DB::commit();
-            return redirect()->route('user.index')->with('success', 'Venta realizada con éxito.');
+            return redirect()->route('user.index')->with('success', '¡Compra realizada con éxito!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Ocurrió un error al procesar la venta: ' . $e::getMessage()]);
+            return back()->withErrors(['error' => 'Error al procesar la venta: ' . $e->getMessage()]);
         }
     }
 }

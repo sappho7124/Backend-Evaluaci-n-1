@@ -37,7 +37,7 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-                @forelse($categorias as$categoria)
+                @forelse($categorias as $categoria)
                     <tr>
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $categoria->nombre }}</td>
                         <td class="px-4 py-3 text-gray-500">{{ $categoria->productos_count }}</td>

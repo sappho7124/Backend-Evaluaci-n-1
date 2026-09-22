@@ -3,16 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Venta extends Model
 {
+    public $timestamps = false;
     protected $table = 'ventas';
-    protected $fillable = ['cliente_nombre', 'clente_email', 'numero_tarjeta'];
 
-    public function productos(): HasMany
+    protected $fillable = [
+        'nombre_cliente', 
+        'correo_cliente', 
+        'numero_tarjeta', 
+        'valor_total'
+    ];
+
+    public function detalles()
     {
-        return $this->hasMany(Producto::class, 'producto_id');
+        return $this->hasMany(DetalleVenta::class, 'venta_id');
     }
 }
