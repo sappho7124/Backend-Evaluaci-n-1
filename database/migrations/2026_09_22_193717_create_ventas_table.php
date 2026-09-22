@@ -14,9 +14,6 @@ return new class extends Migration
             $table->string('nombre_cliente', 150);
             $table->string('correo_cliente', 150);
             $table->string('numero_tarjeta', 20);
-
-            $table->json('productos');
-
             $table->decimal('valor_total', 10, 2);
         });
     }
