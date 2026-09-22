@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Venta extends Model
 {
     protected $table = 'ventas';
-    protected $fillable = ['cliente_nombre', 'clente_email', ''];
+    protected $fillable = ['cliente_nombre', 'clente_email', 'numero_tarjeta'];
 
     public function productos(): HasMany
     {
