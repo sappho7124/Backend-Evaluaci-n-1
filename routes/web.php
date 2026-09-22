@@ -1,19 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\IdiomaController;
-use App\Http\Controllers\JuegoController;
-use App\Http\Controllers\ExpansionController;
-use App\Http\Controllers\BusquedaController;
-
-Route::get('/busqueda-avanzada', [BusquedaController::class, 'index'])->name('busqueda.avanzada');
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\VentaController;
 
 Route::get('/', function () {
-    return redirect()->route('juegos.index');
+    return redirect()->route('user.index');
 });
 
-Route::get('/juegos/busqueda', [JuegoController::class, 'busqueda'])->name('juegos.busqueda');
-
-Route::resource('idiomas', IdiomaController::class);
-Route::resource('juegos', JuegoController::class);
-Route::resource('expansiones', ExpansionController::class);
+Route::resource('categorias', CategoriaController::class)->except(['create', 'edit']);
+Route::resource('productos', ProductoController::class)->except(['create', 'edit']);
+Route::get('/tienda', [VentaController::class, 'create'])->name('user.index');
+Route::get('/ventas', [VentaController::class, 'index'])->name('ventas.index');
+Route::post('/ventas', [VentaController::class, 'store'])->name('ventas.store');
